@@ -1,24 +1,13 @@
-const readline = require("readline");
 const fs = require("fs");
 
-const path = "/dev/stdin";
+const input = fs.readFileSync("/dev/stdin").toString().split("\n");
 
-const rl = readline.createInterface({
-  input: fs.createReadStream(path),
-  crlfDelay: Infinity,
-});
+const count = parseInt(input[0]);
+let answer = '';
 
-let answer = "";
-
-rl.on("line", (line) => {
-  let tmp = line.toString().split(" ");
-
-  if (tmp.length > 1) {
-    a = Number(tmp[0]) + Number(tmp[1]);
-    answer = answer + a + "\n";
-  }
-});
-
-rl.on("close", () => {
-  console.log(answer);
-});
+for (let i = 0; i < count; i++) {
+  let tmp = input[i + 1].split(" ");
+  let result = parseInt(tmp[0]) + parseInt(tmp[1])
+  answer = answer + result + '\n';
+}
+console.log(answer);
