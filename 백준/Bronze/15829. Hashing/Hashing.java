@@ -1,5 +1,4 @@
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Main {
@@ -14,6 +13,7 @@ public class Main {
             int code = sArr[i].charAt(0) - (int)'a' + 1;
             big = big.add(BigInteger.valueOf(code).multiply(BigInteger.valueOf(31).pow(i)));
         }
+        big = big.remainder(BigInteger.valueOf(1234567891));
         System.out.println(big);
     }
 }
