@@ -2,94 +2,100 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String input = br.readLine();
-        int N = Integer.parseInt(input.split(" ")[0]); // 정점 개수
-        int M = Integer.parseInt(input.split(" ")[1]); // 간선 개수
-        int V = Integer.parseInt(input.split(" ")[2]); // 시작 정점
 
-        List<Integer>[] graph = new ArrayList[N + 1]; // 그래프를 인접 리스트로 표현
+        String condition = br.readLine();
+        int N = Integer.parseInt(condition.split(" ")[0]);
+        int M = Integer.parseInt(condition.split(" ")[1]);
+        int V = Integer.parseInt(condition.split(" ")[2]);
 
-        // 그래프 초기화
-        for (int i = 1; i <= N; i++) {
+        List<Integer>[] graph = new List[N + 1];
+
+        for (int i = 0; i <= N; i++) {
             graph[i] = new ArrayList<>();
-        }
+        } // 그래프 초기화
 
-        // 간선 정보 입력받아 그래프 구성
         for (int i = 0; i < M; i++) {
-            String line = br.readLine();
-            int a = Integer.parseInt(line.split(" ")[0]);
-            int b = Integer.parseInt(line.split(" ")[1]);
+            String edge = br.readLine();
+            int a = Integer.parseInt(edge.split(" ")[0]);
+            int b = Integer.parseInt(edge.split(" ")[1]);
             graph[a].add(b);
-            graph[b].add(a);
-        }
+            graph[b].add(a); // 양방향 그래프이므로 연결관계를 양쪽에 추가해줘야 함.
+        } // 간선 추가(연결관계 생성)
 
-        // 작은 번호의 정점부터 탐색하기 위해 인접 리스트 정렬
-        for (int i = 1; i <= N; i++) {
-            Collections.sort(graph[i]);
-        }
-
-        // DFS 결과 출력 (스택 사용)
-        boolean[] visited = new boolean[N + 1]; // 방문 여부를 확인하는 배열
-        StringBuilder dfsResult = DFS(V, graph, visited);
-        System.out.println(dfsResult.toString().trim());
-
-        // BFS 결과 출력
-        Arrays.fill(visited, false); // 방문 배열 초기화
-        StringBuilder bfsResult = BFS(V, graph, visited);
-        System.out.println(bfsResult.toString().trim());
+        System.out.println(DFS(V, graph));
+        System.out.println(BFS(V, graph));
     }
 
-    // DFS 함수 (스택 사용 방식)
-    static StringBuilder DFS(int V, List<Integer>[] graph, boolean[] visited) {
+    static void printGraph(List<Integer>[] graph) {
+        for (List<Integer> node : graph){
+            for (int v : node ){
+                System.out.print(" "+ v + " -> ");
+            }
+            System.out.println();
+        }
+    }
+
+    static String DFS(int V, List<Integer>[] graph){
         StringBuilder sb = new StringBuilder();
-        Deque<Integer> stack = new ArrayDeque<>(); // DFS에 사용할 스택
-        stack.push(V); // 시작 정점을 스택에 추가
+        boolean [] visited = new boolean[graph.length];
+        // 방문을 확인할 배열. 초기화하지 않은 경우 모든 원소는 false이다.
+        List<Integer>[] dfsGraph = graph;
+        for( List<Integer> node: dfsGraph){
+            node.sort(Comparator.reverseOrder());
+        } // 스택에 넣을 때 작은 숫자가 위에 오게 하기 위해 역순으로 정렬
+//        printGraph(dfsGraph);
 
-        while (!stack.isEmpty()) {
-            int now = stack.pop(); // 스택에서 정점을 꺼냄
+        Deque<Integer> stack = new ArrayDeque<>(); // 방문 정점의 스택
 
-            if (!visited[now]) { // 방문하지 않은 정점이라면
-                visited[now] = true; // 방문 처리
-                sb.append(now).append(" "); // 현재 정점 결과 문자열에 추가
-
-                // 인접한 정점을 스택에 추가 (역순으로 추가하여 작은 숫자가 먼저 방문되도록 함)
-                List<Integer> neighbors = graph[now];
-                for (int i = neighbors.size() - 1; i >= 0; i--) {
-                    int next = neighbors.get(i);
-                    if (!visited[next]) {
-                        stack.push(next);
+        stack.push(V);
+        visited[V] = true;
+        while(!stack.isEmpty()){
+            int now = stack.pop(); // 정점 방문
+            sb.append(now + " ");
+            for(int a : dfsGraph[now] ){
+                // 현재 방문한 정점의 인접 정점들의 방문 여부를 검사하고 스택에 넣을지 말지 판단.
+                if(!visited[a]){ // 아직 방문 확인 배열에 없는 정점인 경우
+                    stack.push(a); // 스택에 넣고
+                    visited[a] = true; // 방문 확인 배열을 참으로 바꿈
+                } else { // 방문한 배열로 체크되어 있는 경우
+                    if ( stack.contains(a)){ // 스택에 포함되어 있으면
+                        stack.remove(a);
+                        stack.push(a); // 순서를 끌어올려줌
                     }
                 }
             }
         }
 
-        return sb;
+        return sb.toString().trim();
     }
 
-    // BFS 함수 (큐 사용 방식)
-    static StringBuilder BFS(int V, List<Integer>[] graph, boolean[] visited) {
+    static String BFS(int V, List<Integer>[] graph){
         StringBuilder sb = new StringBuilder();
-        Queue<Integer> queue = new LinkedList<>(); // BFS에 사용할 큐
-        queue.add(V); // 시작 정점을 큐에 추가
-        visited[V] = true; // 시작 정점을 방문처리
+        boolean[] visited = new boolean[graph.length];
+        List<Integer>[] bfsGraph = graph;
+        for( List<Integer> node: bfsGraph){
+            Collections.sort(node);
+        }
 
-        while (!queue.isEmpty()) {
-            int now = queue.poll(); // 큐에서 정점을 꺼냄
-            sb.append(now).append(" "); // 현재 정점 결과 문자열에 추가
-
-            // 현재 정점과 연결된 다른 정점들을 큐에 추가
-            for (int next : graph[now]) {
-                if (!visited[next]) {
-                    queue.add(next);
-                    visited[next] = true; // 방문 처리
+        Deque<Integer> queue = new ArrayDeque<>();
+        queue.add(V);
+        visited[V] = true;
+        while(!queue.isEmpty()){
+            int now = queue.pop();
+            sb.append(now + " ");
+            for(int a : bfsGraph[now] ){
+                if(!visited[a]){
+                    queue.add(a);
+                    visited[a] = true;
                 }
             }
         }
 
-        return sb;
+        return sb.toString().trim();
     }
 }
