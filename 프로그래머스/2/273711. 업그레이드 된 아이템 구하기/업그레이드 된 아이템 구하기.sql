@@ -1,0 +1,22 @@
+/*
+    ITEM_A -> ITEM_B 업그레이드 가능 / ITEM_A는 ITEM_B의 PARENT, PARENT가 없는 아이템 = ROOT 아이템
+    ITEM_A -> ITEM_B -> ITEM_C / ITEM_A > ITEM_B > ITEM_C
+    ROOT 아이템은 PARENT_ITEM_ID가 NULL이며, ROOT 아이템이 없는 경우는 없음.
+    
+    [구해야 하는 것]
+    WHERE 아이템 희귀도 = 'RARE' 인 아이템들의 모든 다음 업그레이드 아이템의 아이템 ID, 아이템 명, 아이템의 희귀도를 출력
+    ORDER BY 아이템 ID DESC
+*/
+
+SELECT 
+    IT1.ITEM_ID, II1.ITEM_NAME, II1.RARITY
+FROM ITEM_TREE AS IT1
+    INNER JOIN ITEM_INFO AS II1 ON II1.ITEM_ID = IT1.ITEM_ID
+    INNER JOIN (
+        SELECT 
+            IT2.ITEM_ID AS 'P_ITEM_ID', II2.ITEM_NAME AS 'P_ITEM_NAME'
+        FROM ITEM_TREE AS IT2
+            INNER JOIN ITEM_INFO AS II2 ON II2.ITEM_ID = IT2.ITEM_ID
+        WHERE II2.RARITY = 'RARE'
+    ) AS T1 ON IT1.PARENT_ITEM_ID = T1.P_ITEM_ID
+ORDER BY IT1.ITEM_ID DESC;
