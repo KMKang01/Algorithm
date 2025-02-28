@@ -14,6 +14,7 @@ public class Main {
 			arr[i] = Integer.parseInt(input[i]);
 		}
 		Arrays.sort(arr);
+		input = null;
 		int result = 1;
 		for (int i = 0; i < arr.length; i++) {
 			if (arr[i] == result) {
